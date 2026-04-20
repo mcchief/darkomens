@@ -50,7 +50,11 @@
     thead th{position:sticky;top:0;z-index:2;background:#101c35;color:#dbe8ff;font-size:11px;text-transform:uppercase;letter-spacing:.06em;text-align:left;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.14);white-space:nowrap}
     tbody td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px;color:#f1f5ff;white-space:nowrap} tbody tr:hover{background:rgba(255,255,255,.04)}
     .name-wrap{display:flex;align-items:center;gap:10px}.avatar{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--blue),var(--blue2))}
-    .tag{min-height:24px;padding:0 9px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.04em}.tag.new{color:#9ff0c7;background:rgba(53,210,138,.10);border:1px solid rgba(53,210,138,.22)}.tag.returned{color:#ffd591;background:rgba(255,179,71,.10);border:1px solid rgba(255,179,71,.22)}.tag.left{color:#ffb7c1;background:rgba(255,107,125,.10);border:1px solid rgba(255,107,125,.22)}.tag.top{color:#9ff0c7;background:rgba(53,210,138,.14);border:1px solid rgba(53,210,138,.28)}
+    .tag{min-height:24px;padding:0 9px;border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.04em}
+    .tag.new{color:#9ff0c7;background:rgba(53,210,138,.10);border:1px solid rgba(53,210,138,.22)}
+    .tag.returned{color:#ffd591;background:rgba(255,179,71,.10);border:1px solid rgba(255,179,71,.22)}
+    .tag.left{color:#ffb7c1;background:rgba(255,107,125,.10);border:1px solid rgba(255,107,125,.22)}
+    .tag.top{color:#9ff0c7;background:rgba(53,210,138,.14);border:1px solid rgba(53,210,138,.28)}
     .metric-pos{color:#61e29d;font-weight:800}.metric-neg{color:#ff7f8f;font-weight:800}.metric-flat{color:#c6d3ea;font-weight:800}.highlight-top{background:linear-gradient(90deg,rgba(53,210,138,.14),rgba(53,210,138,.04))}
     .bottom-grid{grid-template-columns:repeat(3,1fr)} .list-card{overflow:hidden;min-height:240px}.list-body{padding:14px 16px 16px}.simple-list{list-style:none;padding:0;margin:0;display:grid;gap:10px}.simple-list li{display:flex;justify-content:space-between;gap:12px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,.06);font-size:13px}
     .setup-box{padding:16px;border-radius:18px;border:1px dashed rgba(255,255,255,.2);background:rgba(255,255,255,.04);color:var(--soft);line-height:1.7}
@@ -97,7 +101,7 @@
     </section>
 
     <div class="notice glass">
-      <div><span class="dot"></span> Live dashboard connected. If data still fails, the most likely cause is a sheet header mismatch or malformed URL string.</div>
+      <div><span class="dot"></span> Live dashboard connected. Baseline event members are treated as existing clan members, not new joiners.</div>
       <div><span class="badge-success">Live Feed Linked</span></div>
     </div>
 
@@ -131,7 +135,7 @@
       <div class="kpi-card glass green"><div class="kpi-label">Above Minimum</div><div class="kpi-value" id="kpiAbove">0</div><div class="kpi-note">700K and above</div></div>
       <div class="kpi-card glass red"><div class="kpi-label">Flagged</div><div class="kpi-value" id="kpiBelow">0</div><div class="kpi-note">Below 700K</div></div>
       <div class="kpi-card glass red"><div class="kpi-label">Summon</div><div class="kpi-value" id="kpiSummon">0</div><div class="kpi-note">2 consecutive below minimum</div></div>
-      <div class="kpi-card glass gold"><div class="kpi-label">New Joiners</div><div class="kpi-value" id="kpiNew">0</div><div class="kpi-note">First appearance in history</div></div>
+      <div class="kpi-card glass gold"><div class="kpi-label">New Joiners</div><div class="kpi-value" id="kpiNew">0</div><div class="kpi-note">Future first appearances only</div></div>
       <div class="kpi-card glass gold"><div class="kpi-label">Returned</div><div class="kpi-value" id="kpiReturned">0</div><div class="kpi-note">Back after missing an event</div></div>
     </section>
 
@@ -178,7 +182,7 @@
         <div class="list-body"><ul class="simple-list" id="summonList"></ul></div>
       </div>
       <div class="list-card glass">
-        <div class="panel-head"><div><h3 class="panel-title">Movement</h3><p class="panel-desc">Joiners and returnees in selected event</p></div><span class="tag returned">Movement</span></div>
+        <div class="panel-head"><div><h3 class="panel-title">Movement</h3><p class="panel-desc">Real joiners and returnees in selected event</p></div><span class="tag returned">Movement</span></div>
         <div class="list-body"><ul class="simple-list" id="movementList"></ul></div>
       </div>
     </section>
@@ -202,12 +206,13 @@
   <button id="backToTopBtn" class="back-to-top" aria-label="Back to top" title="Back to top">↑</button>
 
   <script>
- const RAW_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-nICmfJRwfzPG0CTYH3cxZjn-7rlzau1VZsv30v1xJBj-9iBoMMFKXYNiVHxlnQ/pub?gid=39947805&single=true&output=csv";
+    const RAW_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-nICmfJRwfzPG0CTYH3cxZjn-7rlzau1VZsv30v1xJBj-9iBoMMFKXYNiVHxlnQ/pub?gid=39947805&single=true&output=csv";
     const EVENT_SUMMARY_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-nICmfJRwfzPG0CTYH3cxZjn-7rlzau1VZsv30v1xJBj-9iBoMMFKXYNiVHxlnQ/pub?gid=1208309589&single=true&output=csv";
     const EVENT_ANALYSIS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-nICmfJRwfzPG0CTYH3cxZjn-7rlzau1VZsv30v1xJBj-9iBoMMFKXYNiVHxlnQ/pub?gid=356777669&single=true&output=csv";
 
     let rawRows = [], summaryRows = [], analysisRows = [];
     let selectedEvent = null;
+    let baselineEvent = null;
     let trendChart = null, topChart = null;
 
     function parseCSVLine(line){
@@ -233,14 +238,13 @@
       });
     }
 
-
     function normalizeKey(key){
       return String(key || '').toLowerCase().replace(/\s+/g,'').replace(/[^a-z0-9]/g,'');
     }
 
     function getValueByAliases(row, aliases){
-      const map = {};
-      Object.keys(row || {}).forEach(k => { map[normalizeKey(k)] = row[k]; });
+      const map={};
+      Object.keys(row || {}).forEach(k=>{ map[normalizeKey(k)] = row[k]; });
       for(const alias of aliases){
         const hit = map[normalizeKey(alias)];
         if(hit !== undefined) return hit;
@@ -273,20 +277,73 @@
       el.innerHTML=items.map(item=>`<li><span>${item}</span><span>${label}</span></li>`).join('');
     }
 
+    function getEffectiveMovement(row){
+      const movement = safe(getValueByAliases(row,['Movement','Status Movement']));
+      const eventDate = safe(getValueByAliases(row,['Event_Date','Event Date','Date']));
+      if(eventDate === baselineEvent && movement === 'New Joiner') return '';
+      return movement;
+    }
+
     function renderTrend(){
       const ctx=document.getElementById('trendChart').getContext('2d');
       if(trendChart) trendChart.destroy();
-      const data=[...summaryRows].filter(r=>safe(getValueByAliases(r,['Event_Date','Event Date','Date']))).sort((a,b)=>new Date(getValueByAliases(a,['Event_Date','Event Date','Date']))-new Date(getValueByAliases(b,['Event_Date','Event Date','Date'])));
+      const data=[...summaryRows]
+        .filter(r=>safe(getValueByAliases(r,['Event_Date','Event Date','Date'])))
+        .sort((a,b)=>new Date(getValueByAliases(a,['Event_Date','Event Date','Date']))-new Date(getValueByAliases(b,['Event_Date','Event Date','Date'])));
       const gradient=ctx.createLinearGradient(0,0,0,320);
       gradient.addColorStop(0,'rgba(122,184,255,.40)'); gradient.addColorStop(1,'rgba(122,184,255,.03)');
-      trendChart=new Chart(ctx,{type:'line',data:{labels:data.map(d=>getValueByAliases(d,['Event_Date','Event Date','Date'])),datasets:[{label:'Total Essence',data:data.map(d=>parseNumber(getValueByAliases(d,['Total_Essence','Total Essence','Essence Total']))),borderColor:'#9ec5ff',backgroundColor:gradient,fill:true,tension:.35,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#dce9ff',pointBorderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+formatShort(ctx.raw)}}},scales:{x:{ticks:{color:'#b8c8e6'}},y:{ticks:{color:'#b8c8e6',callback:value=>formatShort(value)},grid:{color:'rgba(255,255,255,.08)'}}}}});
+      trendChart=new Chart(ctx,{
+        type:'line',
+        data:{
+          labels:data.map(d=>getValueByAliases(d,['Event_Date','Event Date','Date'])),
+          datasets:[{
+            label:'Total Essence',
+            data:data.map(d=>parseNumber(getValueByAliases(d,['Total_Essence','Total Essence','Essence Total']))),
+            borderColor:'#9ec5ff',
+            backgroundColor:gradient,
+            fill:true,
+            tension:.35,
+            pointRadius:3,
+            pointHoverRadius:5,
+            pointBackgroundColor:'#dce9ff',
+            pointBorderWidth:0
+          }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+formatShort(ctx.raw)}}},
+          scales:{x:{ticks:{color:'#b8c8e6'}},y:{ticks:{color:'#b8c8e6',callback:value=>formatShort(value)},grid:{color:'rgba(255,255,255,.08)'}}}
+        }
+      });
     }
 
     function renderTopChart(rows){
-      const top=[...rows].sort((a,b)=>parseNumber(getValueByAliases(b,['Essence_Points','Essence','Points','Score']))-parseNumber(getValueByAliases(a,['Essence_Points','Essence','Points','Score']))).slice(0,10);
+      const top=[...rows]
+        .sort((a,b)=>parseNumber(getValueByAliases(b,['Essence_Points','Essence','Points','Score']))-parseNumber(getValueByAliases(a,['Essence_Points','Essence','Points','Score'])))
+        .slice(0,10);
       const ctx=document.getElementById('topChart').getContext('2d');
       if(topChart) topChart.destroy();
-      topChart=new Chart(ctx,{type:'bar',data:{labels:top.map(r=>getValueByAliases(r,['Player','Name','Player Name'])),datasets:[{label:'Essence',data:top.map(r=>parseNumber(getValueByAliases(r,['Essence_Points','Essence','Points','Score']))),backgroundColor:['#8bbcff','#7eb2ff','#74a9ff','#6ca1ff','#6498ff','#5d90ff','#5688ff','#4e80ff','#4777ff','#406fff'],borderRadius:10,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+formatShort(ctx.raw)}}},scales:{x:{ticks:{color:'#c4d4ef',callback:value=>formatShort(value)},grid:{color:'rgba(255,255,255,.08)'}},y:{ticks:{color:'#c4d4ef'},grid:{display:false}}}}});
+      topChart=new Chart(ctx,{
+        type:'bar',
+        data:{
+          labels:top.map(r=>getValueByAliases(r,['Player','Name','Player Name'])),
+          datasets:[{
+            label:'Essence',
+            data:top.map(r=>parseNumber(getValueByAliases(r,['Essence_Points','Essence','Points','Score']))),
+            backgroundColor:['#8bbcff','#7eb2ff','#74a9ff','#6ca1ff','#6498ff','#5d90ff','#5688ff','#4e80ff','#4777ff','#406fff'],
+            borderRadius:10,
+            borderSkipped:false
+          }]
+        },
+        options:{
+          indexAxis:'y',
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+formatShort(ctx.raw)}}},
+          scales:{x:{ticks:{color:'#c4d4ef',callback:value=>formatShort(value)},grid:{color:'rgba(255,255,255,.08)'}},y:{ticks:{color:'#c4d4ef'},grid:{display:false}}}
+        }
+      });
     }
 
     function renderEvent(){
@@ -297,11 +354,11 @@
       const totalPlayers=eventRows.length;
       const totalEssence=eventRows.reduce((s,r)=>s+parseNumber(getValueByAliases(r,['Essence_Points','Essence','Points','Score'])),0);
       const average=totalPlayers ? totalEssence/totalPlayers : 0;
-      const above=eventRows.filter(r=>safe(r.Flag)==='OK').length;
-      const below=eventRows.filter(r=>safe(r.Flag)==='FLAG').length;
-      const summon=eventRows.filter(r=>safe(r.Enforcement)==='SUMMON').length;
-      const newJoiners=eventRows.filter(r=>safe(r.Movement)==='New Joiner').length;
-      const returned=eventRows.filter(r=>safe(r.Movement)==='Returned').length;
+      const above=eventRows.filter(r=>safe(getValueByAliases(r,['Flag']))==='OK').length;
+      const below=eventRows.filter(r=>safe(getValueByAliases(r,['Flag']))==='FLAG').length;
+      const summon=eventRows.filter(r=>safe(getValueByAliases(r,['Enforcement','Action']))==='SUMMON').length;
+      const newJoiners=selectedEvent === baselineEvent ? 0 : eventRows.filter(r=>getEffectiveMovement(r)==='New Joiner').length;
+      const returned=eventRows.filter(r=>getEffectiveMovement(r)==='Returned').length;
 
       setText('latestEvent', selectedEvent || 'No data');
       setText('kpiPlayers', totalPlayers.toLocaleString());
@@ -314,41 +371,68 @@
       setText('kpiReturned', returned.toLocaleString());
 
       const tbody=document.getElementById('analysisTable');
-      tbody.innerHTML=filtered.sort((a,b)=>parseNumber(getValueByAliases(b,['Essence_Points','Essence','Points','Score']))-parseNumber(getValueByAliases(a,['Essence_Points','Essence','Points','Score']))).map(r=>{
-        const player=safe(getValueByAliases(r,['Player','Name','Player Name']));
-        const essence=parseNumber(getValueByAliases(r,['Essence_Points','Essence','Points','Score']));
-        const prev=parseNumber(getValueByAliases(r,['Prev_Essence','Previous_Essence','Prev Essence','Previous Essence']));
-        const change=parseNumber(getValueByAliases(r,['Change','Delta']));
-        const pct=parseNumber(getValueByAliases(r,['Change_%','Change%','Change_Pct','Change Pct','Percent_Change','Pct Change']));
-        const flag=safe(getValueByAliases(r,['Flag']));
-        const streak=safe(getValueByAliases(r,['Below_Streak','Below Streak','Streak']));
-        const enforcement=safe(getValueByAliases(r,['Enforcement','Action']));
-        const movement=safe(getValueByAliases(r,['Movement','Status Movement']));
-        const tier=safe(getValueByAliases(r,['Tier','Category']));
-        const rowClass = tier==='Top Performer' ? 'highlight-top' : '';
-        return `<tr class="${rowClass}">
-          <td>${createNameCell(player)}</td>
-          <td>${formatShort(essence)}</td>
-          <td>${formatShort(prev)}</td>
-          <td class="${metricClass(change)}">${formatSignedShort(change)}</td>
-          <td class="${metricClass(pct)}">${Number.isFinite(pct)?formatPercent(pct):'—'}</td>
-          <td>${flag||'—'}</td>
-          <td>${streak||'0'}</td>
-          <td>${enforcement||'—'}</td>
-          <td>${movement||'—'}</td>
-          <td>${tier||'—'}</td>
-        </tr>`;
-      }).join('');
+      tbody.innerHTML=filtered
+        .sort((a,b)=>parseNumber(getValueByAliases(b,['Essence_Points','Essence','Points','Score']))-parseNumber(getValueByAliases(a,['Essence_Points','Essence','Points','Score'])))
+        .map(r=>{
+          const player=safe(getValueByAliases(r,['Player','Name','Player Name']));
+          const essence=parseNumber(getValueByAliases(r,['Essence_Points','Essence','Points','Score']));
+          const prev=parseNumber(getValueByAliases(r,['Prev_Essence','Previous_Essence','Prev Essence','Previous Essence']));
+          const change=parseNumber(getValueByAliases(r,['Change','Delta']));
+          const pct=parseNumber(getValueByAliases(r,['Change_%','Change%','Change_Pct','Change Pct','Percent_Change','Pct Change']));
+          const flag=safe(getValueByAliases(r,['Flag']));
+          const streak=safe(getValueByAliases(r,['Below_Streak','Below Streak','Streak']));
+          const enforcement=safe(getValueByAliases(r,['Enforcement','Action']));
+          const movement=getEffectiveMovement(r);
+          const tier=safe(getValueByAliases(r,['Tier','Category']));
+          const rowClass = tier==='Top Performer' ? 'highlight-top' : '';
+          return `<tr class="${rowClass}">
+            <td>${createNameCell(player)}</td>
+            <td>${formatShort(essence)}</td>
+            <td>${formatShort(prev)}</td>
+            <td class="${metricClass(change)}">${formatSignedShort(change)}</td>
+            <td class="${metricClass(pct)}">${Number.isFinite(pct)?formatPercent(pct):'—'}</td>
+            <td>${flag||'—'}</td>
+            <td>${streak||'0'}</td>
+            <td>${enforcement||'—'}</td>
+            <td>${movement||'—'}</td>
+            <td>${tier||'—'}</td>
+          </tr>`;
+        }).join('');
 
       renderTopChart(eventRows);
-      renderList('flaggedList', eventRows.filter(r=>safe(getValueByAliases(r,['Flag']))==='FLAG').sort((a,b)=>parseNumber(getValueByAliases(b,['Essence_Points','Essence','Points','Score']))-parseNumber(getValueByAliases(a,['Essence_Points','Essence','Points','Score']))).map(r=>`${safe(getValueByAliases(r,['Player','Name','Player Name']))} — ${formatShort(parseNumber(getValueByAliases(r,['Essence_Points','Essence','Points','Score'])))}`), 'FLAG');
-      renderList('summonList', eventRows.filter(r=>safe(getValueByAliases(r,['Enforcement','Action']))==='SUMMON').sort((a,b)=>parseNumber(getValueByAliases(b,['Below_Streak','Below Streak','Streak']))-parseNumber(getValueByAliases(a,['Below_Streak','Below Streak','Streak']))).map(r=>`${safe(getValueByAliases(r,['Player','Name','Player Name']))} — streak ${safe(getValueByAliases(r,['Below_Streak','Below Streak','Streak']))}`), 'SUMMON');
-      renderList('movementList', eventRows.filter(r=>['New Joiner','Returned'].includes(safe(getValueByAliases(r,['Movement','Status Movement'])))).map(r=>`${safe(getValueByAliases(r,['Player','Name','Player Name']))} — ${safe(getValueByAliases(r,['Movement','Status Movement']))}`), 'MOVE');
+
+      renderList(
+        'flaggedList',
+        eventRows
+          .filter(r=>safe(getValueByAliases(r,['Flag']))==='FLAG')
+          .sort((a,b)=>parseNumber(getValueByAliases(b,['Essence_Points','Essence','Points','Score']))-parseNumber(getValueByAliases(a,['Essence_Points','Essence','Points','Score'])))
+          .map(r=>`${safe(getValueByAliases(r,['Player','Name','Player Name']))} — ${formatShort(parseNumber(getValueByAliases(r,['Essence_Points','Essence','Points','Score'])))}`),
+        'FLAG'
+      );
+
+      renderList(
+        'summonList',
+        eventRows
+          .filter(r=>safe(getValueByAliases(r,['Enforcement','Action']))==='SUMMON')
+          .sort((a,b)=>parseNumber(getValueByAliases(b,['Below_Streak','Below Streak','Streak']))-parseNumber(getValueByAliases(a,['Below_Streak','Below Streak','Streak'])))
+          .map(r=>`${safe(getValueByAliases(r,['Player','Name','Player Name']))} — streak ${safe(getValueByAliases(r,['Below_Streak','Below Streak','Streak']))}`),
+        'SUMMON'
+      );
+
+      renderList(
+        'movementList',
+        eventRows
+          .filter(r=>['New Joiner','Returned'].includes(getEffectiveMovement(r)))
+          .map(r=>`${safe(getValueByAliases(r,['Player','Name','Player Name']))} — ${getEffectiveMovement(r)}`),
+        'MOVE'
+      );
     }
 
     function populateEvents(){
       const eventSelect=document.getElementById('eventSelect');
-      const events=[...new Set(summaryRows.map(r=>safe(getValueByAliases(r,['Event_Date','Event Date','Date']))).filter(Boolean))].sort((a,b)=>new Date(a)-new Date(b));
+      const events=[...new Set(summaryRows.map(r=>safe(getValueByAliases(r,['Event_Date','Event Date','Date']))).filter(Boolean))]
+        .sort((a,b)=>new Date(a)-new Date(b));
+      baselineEvent = events[0] || null;
       eventSelect.innerHTML=events.map(e=>`<option value="${e}">${e}</option>`).join('');
       selectedEvent=events[events.length-1] || null;
       if(selectedEvent) eventSelect.value=selectedEvent;
@@ -370,18 +454,23 @@
         if(hasPlaceholders()){
           setText('latestEvent','Setup needed');
           document.getElementById('analysisTable').innerHTML = `<tr><td colspan="10">Replace the three placeholder CSV URLs in the script section, then reload.</td></tr>`;
-          renderList('flaggedList', [], '—'); renderList('summonList', [], '—'); renderList('movementList', [], '—');
+          renderList('flaggedList', [], '—');
+          renderList('summonList', [], '—');
+          renderList('movementList', [], '—');
           return;
         }
-        [rawRows, summaryRows, analysisRows] = await Promise.all([fetchCsv(RAW_URL), fetchCsv(EVENT_SUMMARY_URL), fetchCsv(EVENT_ANALYSIS_URL)]);
+        [rawRows, summaryRows, analysisRows] = await Promise.all([
+          fetchCsv(RAW_URL),
+          fetchCsv(EVENT_SUMMARY_URL),
+          fetchCsv(EVENT_ANALYSIS_URL)
+        ]);
         populateEvents();
         renderTrend();
         renderEvent();
       }catch(error){
         console.error(error);
         setText('latestEvent','Load failed');
-        document.getElementById('analysisTable').innerHTML = `<tr><td colspan="10">${String(error.message||error)}</td></tr>`;
-        document.getElementById('flaggedList').innerHTML = `<li><span>${String(error.message||error)}</span><span>ERR</span></li>`;
+        document.getElementById('analysisTable').innerHTML = `<tr><td colspan="10">${error.message}</td></tr>`;
       }
     }
 
