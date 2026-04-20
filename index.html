@@ -76,7 +76,7 @@
       flex-wrap:wrap;
     }
 
-    .brand-badge,.chip,.tag,.home-btn,.status-badge,.tier-badge,.action-badge,.perf-badge{
+    .brand-badge,.chip,.home-btn,.status-badge,.tier-badge,.action-badge,.perf-badge{
       display:inline-flex;
       align-items:center;
       justify-content:center;
@@ -447,31 +447,32 @@
       padding:0;
       margin:0;
       display:grid;
-      gap:10px;
+      gap:0;
     }
 
     .simple-list li{
-      display:flex;
-      justify-content:space-between;
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 110px 150px;
       align-items:center;
       gap:12px;
-      padding-bottom:10px;
+      padding:12px 0;
       border-bottom:1px solid rgba(255,255,255,.06);
       font-size:13px;
     }
 
-    .list-main{
-      display:flex;
-      align-items:center;
-      gap:10px;
+    .compact-name{
       min-width:0;
-      flex:1;
-    }
-
-    .list-text{
-      white-space:nowrap;
       overflow:hidden;
       text-overflow:ellipsis;
+      white-space:nowrap;
+      color:#eef4ff;
+    }
+
+    .compact-score{
+      text-align:right;
+      font-weight:700;
+      color:#dbeafe;
+      white-space:nowrap;
     }
 
     .badge-pill{
@@ -485,6 +486,7 @@
       letter-spacing:.03em;
       border:1px solid transparent;
       white-space:nowrap;
+      justify-self:end;
     }
 
     .badge-red{
@@ -605,6 +607,10 @@
       border-color:rgba(255,107,125,.24);
     }
 
+    .bottom-grid.two-panels{
+      grid-template-columns:repeat(2,1fr);
+    }
+
     .setup-box{
       padding:16px;
       border-radius:18px;
@@ -649,7 +655,7 @@
     }
 
     @media(max-width:1200px){
-      .hero-grid,.bottom-grid{grid-template-columns:1fr}
+      .hero-grid,.bottom-grid.two-panels{grid-template-columns:1fr}
       .kpi-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
       .event-nav-grid{grid-template-columns:140px 220px 1fr 140px}
     }
@@ -667,6 +673,17 @@
       .hero-side{grid-template-columns:1fr 1fr}
       .kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
       .chart-wrap,.chart-wrap-wide{height:280px}
+    }
+
+    @media(max-width:700px){
+      .simple-list li{
+        grid-template-columns:minmax(0,1fr) 90px 130px;
+        gap:10px;
+      }
+
+      .compact-score{
+        font-size:12px;
+      }
     }
 
     @media(max-width:640px){
@@ -730,7 +747,7 @@
           </div>
           <div class="mini-stat">
             <div class="mini-stat-label">Tracking</div>
-            <div class="mini-stat-value">New / Active / Returning</div>
+            <div class="mini-stat-value">Historical Comparison</div>
           </div>
         </div>
       </div>
@@ -771,8 +788,7 @@
         </div>
       </div>
     </section>
-
-    <section class="kpi-grid">
+	    <section class="kpi-grid">
       <div class="kpi-card glass blue">
         <div class="kpi-label">Total Players</div>
         <div class="kpi-value" id="kpiPlayers">0</div>
@@ -880,7 +896,8 @@
         </table>
       </div>
     </section>
-	    <section class="bottom-grid">
+
+    <section class="bottom-grid two-panels">
       <div class="list-card glass">
         <div class="panel-head">
           <div>
@@ -904,19 +921,6 @@
         </div>
         <div class="list-body">
           <ul class="simple-list" id="summonList"></ul>
-        </div>
-      </div>
-
-      <div class="list-card glass">
-        <div class="panel-head">
-          <div>
-            <h3 class="panel-title">Player Status Changes</h3>
-            <p class="panel-desc">New and returning members in selected event</p>
-          </div>
-          <span class="badge-pill badge-blue">Status</span>
-        </div>
-        <div class="list-body">
-          <ul class="simple-list" id="movementList"></ul>
         </div>
       </div>
     </section>
@@ -1144,16 +1148,23 @@
     function renderList(id, items){
       const el = document.getElementById(id);
 
+      if(!el) return;
+
       if(!items.length){
-        el.innerHTML = `<li><span class="list-text">No records</span><span class="badge-pill badge-blue">None</span></li>`;
+        el.innerHTML = `
+          <li>
+            <span class="compact-name">No records</span>
+            <span class="compact-score">—</span>
+            <span class="badge-pill badge-blue">None</span>
+          </li>
+        `;
         return;
       }
 
       el.innerHTML = items.map(item => `
         <li>
-          <div class="list-main">
-            <span class="list-text">${item.text}</span>
-          </div>
+          <span class="compact-name">${item.name}</span>
+          <span class="compact-score">${item.score || '—'}</span>
           <span class="badge-pill ${item.badgeClass}">${item.badge}</span>
         </li>
       `).join('');
@@ -1314,7 +1325,10 @@
       }).length;
 
       const summon = eventRows.filter(r => {
-        const action = getAction(getValueByAliases(r,['Enforcement','Action']), getValueByAliases(r,['Below_Streak','Below Streak','Streak']));
+        const action = getAction(
+          getValueByAliases(r,['Enforcement','Action']),
+          getValueByAliases(r,['Below_Streak','Below Streak','Streak'])
+        );
         return action === 'Action Required';
       }).length;
 
@@ -1377,36 +1391,27 @@
           .filter(r => parseNumber(getValueByAliases(r,['Essence_Points','Essence','Points','Score'])) < 700000)
           .sort((a,b) => parseNumber(getValueByAliases(b,['Essence_Points','Essence','Points','Score'])) - parseNumber(getValueByAliases(a,['Essence_Points','Essence','Points','Score'])))
           .map(r => ({
-            text:`${safe(getValueByAliases(r,['Player','Name','Player Name']))} — ${formatShort(parseNumber(getValueByAliases(r,['Essence_Points','Essence','Points','Score'])))}`,
-            badge:'Below Target',
-            badgeClass:'badge-red'
+            name: safe(getValueByAliases(r,['Player','Name','Player Name'])),
+            score: formatShort(parseNumber(getValueByAliases(r,['Essence_Points','Essence','Points','Score']))),
+            badge: 'Below Target',
+            badgeClass: 'badge-red'
           }))
       );
 
       renderList(
         'summonList',
         eventRows
-          .filter(r => getAction(getValueByAliases(r,['Enforcement','Action']), getValueByAliases(r,['Below_Streak','Below Streak','Streak'])) === 'Action Required')
+          .filter(r => getAction(
+            getValueByAliases(r,['Enforcement','Action']),
+            getValueByAliases(r,['Below_Streak','Below Streak','Streak'])
+          ) === 'Action Required')
           .sort((a,b) => parseNumber(getValueByAliases(b,['Below_Streak','Below Streak','Streak'])) - parseNumber(getValueByAliases(a,['Below_Streak','Below Streak','Streak'])))
           .map(r => ({
-            text:`${safe(getValueByAliases(r,['Player','Name','Player Name']))} — ${getStreakLabel(getValueByAliases(r,['Below_Streak','Below Streak','Streak']))}`,
-            badge:'Action Required',
-            badgeClass:'badge-yellow'
+            name: safe(getValueByAliases(r,['Player','Name','Player Name'])),
+            score: getStreakLabel(getValueByAliases(r,['Below_Streak','Below Streak','Streak'])),
+            badge: 'Action Required',
+            badgeClass: 'badge-yellow'
           }))
-      );
-
-      renderList(
-        'movementList',
-        eventRows
-          .filter(r => ['New Member','Returning Member'].includes(getEffectiveMovement(r)))
-          .map(r => {
-            const movement = getEffectiveMovement(r);
-            return {
-              text:`${safe(getValueByAliases(r,['Player','Name','Player Name']))} — ${movement}`,
-              badge:movement,
-              badgeClass:movement === 'New Member' ? 'badge-yellow' : 'badge-blue'
-            };
-          })
       );
     }
 	    function populateEvents(){
@@ -1456,7 +1461,6 @@
           document.getElementById('analysisTable').innerHTML = `<tr><td colspan="10">Replace the three placeholder CSV URLs in the script section, then reload.</td></tr>`;
           renderList('flaggedList', []);
           renderList('summonList', []);
-          renderList('movementList', []);
           return;
         }
 
@@ -1483,7 +1487,6 @@
     });
 
     document.getElementById('playerSearch').addEventListener('input', renderEvent);
-    document.getElementById('refreshBtn')?.addEventListener('click', loadData);
     document.getElementById('prevEventBtn').addEventListener('click', goToPreviousEvent);
     document.getElementById('nextEventBtn').addEventListener('click', goToNextEvent);
 
