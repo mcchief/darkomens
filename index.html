@@ -202,9 +202,11 @@
   <button id="backToTopBtn" class="back-to-top" aria-label="Back to top" title="Back to top">↑</button>
 
   <script>
-    const RAW_URL = "PASTE_GOOGLE_SHEETS_RAW_DATA_CSV_URL_HERE";
-    const EVENT_SUMMARY_URL = "PASTE_GOOGLE_SHEETS_EVENT_SUMMARY_CSV_URL_HERE";
-    const EVENT_ANALYSIS_URL = "PASTE_GOOGLE_SHEETS_EVENT_ANALYSIS_CSV_URL_HERE";
+ const RAW_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-nICmfJRwfzPG0CTYH3cxZjn-7rlzau1VZsv30v1xJBj-9iBoMMFKXYNiVHxlnQ/pub?gid=39947805&single=true&output=csv
+";
+    const EVENT_SUMMARY_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-nICmfJRwfzPG0CTYH3cxZjn-7rlzau1VZsv30v1xJBj-9iBoMMFKXYNiVHxlnQ/pub?gid=1208309589&single=true&output=csv";
+    const EVENT_ANALYSIS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-nICmfJRwfzPG0CTYH3cxZjn-7rlzau1VZsv30v1xJBj-9iBoMMFKXYNiVHxlnQ/pub?gid=356777669&single=true&output=csv
+";
 
     let rawRows = [], summaryRows = [], analysisRows = [];
     let selectedEvent = null;
