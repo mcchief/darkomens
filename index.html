@@ -233,6 +233,21 @@
       });
     }
 
+
+    function normalizeKey(key){
+      return String(key || '').toLowerCase().replace(/\s+/g,'').replace(/[^a-z0-9]/g,'');
+    }
+
+    function getValueByAliases(row, aliases){
+      const map = {};
+      Object.keys(row || {}).forEach(k => { map[normalizeKey(k)] = row[k]; });
+      for(const alias of aliases){
+        const hit = map[normalizeKey(alias)];
+        if(hit !== undefined) return hit;
+      }
+      return '';
+    }
+
     function parseNumber(v){ return Number(String(v||0).replace(/,/g,'')) || 0; }
     function formatShort(num){
       const n=Number(num)||0;
@@ -277,7 +292,7 @@
     function renderEvent(){
       const eventRows=analysisRows.filter(r=>safe(getValueByAliases(r,['Event_Date','Event Date','Date']))===selectedEvent);
       const searchTerm=safe(document.getElementById('playerSearch').value).toLowerCase();
-      const filtered=eventRows.filter(r=>!searchTerm || safe(r.Player).toLowerCase().includes(searchTerm));
+      const filtered=eventRows.filter(r=>!searchTerm || safe(getValueByAliases(r,['Player','Name','Player Name'])).toLowerCase().includes(searchTerm));
 
       const totalPlayers=eventRows.length;
       const totalEssence=eventRows.reduce((s,r)=>s+parseNumber(getValueByAliases(r,['Essence_Points','Essence','Points','Score'])),0);
@@ -365,7 +380,8 @@
       }catch(error){
         console.error(error);
         setText('latestEvent','Load failed');
-        document.getElementById('analysisTable').innerHTML = `<tr><td colspan="10">${error.message}</td></tr>`;
+        document.getElementById('analysisTable').innerHTML = `<tr><td colspan="10">${String(error.message||error)}</td></tr>`;
+        document.getElementById('flaggedList').innerHTML = `<li><span>${String(error.message||error)}</span><span>ERR</span></li>`;
       }
     }
 
