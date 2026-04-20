@@ -97,8 +97,8 @@
     </section>
 
     <div class="notice glass">
-      <div><span class="dot"></span> Dashboard starter is ready. Replace the placeholder CSV URLs in the script section once your Google Sheet tabs are published.</div>
-      <div><span class="badge-success">Starter Ready</span></div>
+      <div><span class="dot"></span> Live dashboard connected. If data still fails, the most likely cause is a sheet header mismatch or malformed URL string.</div>
+      <div><span class="badge-success">Live Feed Linked</span></div>
     </div>
 
     <section class="filters glass">
@@ -202,11 +202,9 @@
   <button id="backToTopBtn" class="back-to-top" aria-label="Back to top" title="Back to top">↑</button>
 
   <script>
- const RAW_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-nICmfJRwfzPG0CTYH3cxZjn-7rlzau1VZsv30v1xJBj-9iBoMMFKXYNiVHxlnQ/pub?gid=39947805&single=true&output=csv
-";
+ const RAW_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-nICmfJRwfzPG0CTYH3cxZjn-7rlzau1VZsv30v1xJBj-9iBoMMFKXYNiVHxlnQ/pub?gid=39947805&single=true&output=csv";
     const EVENT_SUMMARY_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-nICmfJRwfzPG0CTYH3cxZjn-7rlzau1VZsv30v1xJBj-9iBoMMFKXYNiVHxlnQ/pub?gid=1208309589&single=true&output=csv";
-    const EVENT_ANALYSIS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-nICmfJRwfzPG0CTYH3cxZjn-7rlzau1VZsv30v1xJBj-9iBoMMFKXYNiVHxlnQ/pub?gid=356777669&single=true&output=csv
-";
+    const EVENT_ANALYSIS_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vT-nICmfJRwfzPG0CTYH3cxZjn-7rlzau1VZsv30v1xJBj-9iBoMMFKXYNiVHxlnQ/pub?gid=356777669&single=true&output=csv";
 
     let rawRows = [], summaryRows = [], analysisRows = [];
     let selectedEvent = null;
@@ -263,26 +261,26 @@
     function renderTrend(){
       const ctx=document.getElementById('trendChart').getContext('2d');
       if(trendChart) trendChart.destroy();
-      const data=[...summaryRows].filter(r=>safe(r.Event_Date)).sort((a,b)=>new Date(a.Event_Date)-new Date(b.Event_Date));
+      const data=[...summaryRows].filter(r=>safe(getValueByAliases(r,['Event_Date','Event Date','Date']))).sort((a,b)=>new Date(getValueByAliases(a,['Event_Date','Event Date','Date']))-new Date(getValueByAliases(b,['Event_Date','Event Date','Date'])));
       const gradient=ctx.createLinearGradient(0,0,0,320);
       gradient.addColorStop(0,'rgba(122,184,255,.40)'); gradient.addColorStop(1,'rgba(122,184,255,.03)');
-      trendChart=new Chart(ctx,{type:'line',data:{labels:data.map(d=>d.Event_Date),datasets:[{label:'Total Essence',data:data.map(d=>parseNumber(d.Total_Essence)),borderColor:'#9ec5ff',backgroundColor:gradient,fill:true,tension:.35,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#dce9ff',pointBorderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+formatShort(ctx.raw)}}},scales:{x:{ticks:{color:'#b8c8e6'}},y:{ticks:{color:'#b8c8e6',callback:value=>formatShort(value)},grid:{color:'rgba(255,255,255,.08)'}}}}});
+      trendChart=new Chart(ctx,{type:'line',data:{labels:data.map(d=>getValueByAliases(d,['Event_Date','Event Date','Date'])),datasets:[{label:'Total Essence',data:data.map(d=>parseNumber(getValueByAliases(d,['Total_Essence','Total Essence','Essence Total']))),borderColor:'#9ec5ff',backgroundColor:gradient,fill:true,tension:.35,pointRadius:3,pointHoverRadius:5,pointBackgroundColor:'#dce9ff',pointBorderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+formatShort(ctx.raw)}}},scales:{x:{ticks:{color:'#b8c8e6'}},y:{ticks:{color:'#b8c8e6',callback:value=>formatShort(value)},grid:{color:'rgba(255,255,255,.08)'}}}}});
     }
 
     function renderTopChart(rows){
-      const top=[...rows].sort((a,b)=>parseNumber(b.Essence_Points)-parseNumber(a.Essence_Points)).slice(0,10);
+      const top=[...rows].sort((a,b)=>parseNumber(getValueByAliases(b,['Essence_Points','Essence','Points','Score']))-parseNumber(getValueByAliases(a,['Essence_Points','Essence','Points','Score']))).slice(0,10);
       const ctx=document.getElementById('topChart').getContext('2d');
       if(topChart) topChart.destroy();
-      topChart=new Chart(ctx,{type:'bar',data:{labels:top.map(r=>r.Player),datasets:[{label:'Essence',data:top.map(r=>parseNumber(r.Essence_Points)),backgroundColor:['#8bbcff','#7eb2ff','#74a9ff','#6ca1ff','#6498ff','#5d90ff','#5688ff','#4e80ff','#4777ff','#406fff'],borderRadius:10,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+formatShort(ctx.raw)}}},scales:{x:{ticks:{color:'#c4d4ef',callback:value=>formatShort(value)},grid:{color:'rgba(255,255,255,.08)'}},y:{ticks:{color:'#c4d4ef'},grid:{display:false}}}}});
+      topChart=new Chart(ctx,{type:'bar',data:{labels:top.map(r=>getValueByAliases(r,['Player','Name','Player Name'])),datasets:[{label:'Essence',data:top.map(r=>parseNumber(getValueByAliases(r,['Essence_Points','Essence','Points','Score']))),backgroundColor:['#8bbcff','#7eb2ff','#74a9ff','#6ca1ff','#6498ff','#5d90ff','#5688ff','#4e80ff','#4777ff','#406fff'],borderRadius:10,borderSkipped:false}]},options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+formatShort(ctx.raw)}}},scales:{x:{ticks:{color:'#c4d4ef',callback:value=>formatShort(value)},grid:{color:'rgba(255,255,255,.08)'}},y:{ticks:{color:'#c4d4ef'},grid:{display:false}}}}});
     }
 
     function renderEvent(){
-      const eventRows=analysisRows.filter(r=>safe(r.Event_Date)===selectedEvent);
+      const eventRows=analysisRows.filter(r=>safe(getValueByAliases(r,['Event_Date','Event Date','Date']))===selectedEvent);
       const searchTerm=safe(document.getElementById('playerSearch').value).toLowerCase();
       const filtered=eventRows.filter(r=>!searchTerm || safe(r.Player).toLowerCase().includes(searchTerm));
 
       const totalPlayers=eventRows.length;
-      const totalEssence=eventRows.reduce((s,r)=>s+parseNumber(r.Essence_Points),0);
+      const totalEssence=eventRows.reduce((s,r)=>s+parseNumber(getValueByAliases(r,['Essence_Points','Essence','Points','Score'])),0);
       const average=totalPlayers ? totalEssence/totalPlayers : 0;
       const above=eventRows.filter(r=>safe(r.Flag)==='OK').length;
       const below=eventRows.filter(r=>safe(r.Flag)==='FLAG').length;
@@ -301,38 +299,48 @@
       setText('kpiReturned', returned.toLocaleString());
 
       const tbody=document.getElementById('analysisTable');
-      tbody.innerHTML=filtered.sort((a,b)=>parseNumber(b.Essence_Points)-parseNumber(a.Essence_Points)).map(r=>{
-        const essence=parseNumber(r.Essence_Points), prev=parseNumber(r.Prev_Essence), change=parseNumber(r.Change), pct=parseNumber(r.Change_);
-        const rowClass = safe(r.Tier)==='Top Performer' ? 'highlight-top' : '';
+      tbody.innerHTML=filtered.sort((a,b)=>parseNumber(getValueByAliases(b,['Essence_Points','Essence','Points','Score']))-parseNumber(getValueByAliases(a,['Essence_Points','Essence','Points','Score']))).map(r=>{
+        const player=safe(getValueByAliases(r,['Player','Name','Player Name']));
+        const essence=parseNumber(getValueByAliases(r,['Essence_Points','Essence','Points','Score']));
+        const prev=parseNumber(getValueByAliases(r,['Prev_Essence','Previous_Essence','Prev Essence','Previous Essence']));
+        const change=parseNumber(getValueByAliases(r,['Change','Delta']));
+        const pct=parseNumber(getValueByAliases(r,['Change_%','Change%','Change_Pct','Change Pct','Percent_Change','Pct Change']));
+        const flag=safe(getValueByAliases(r,['Flag']));
+        const streak=safe(getValueByAliases(r,['Below_Streak','Below Streak','Streak']));
+        const enforcement=safe(getValueByAliases(r,['Enforcement','Action']));
+        const movement=safe(getValueByAliases(r,['Movement','Status Movement']));
+        const tier=safe(getValueByAliases(r,['Tier','Category']));
+        const rowClass = tier==='Top Performer' ? 'highlight-top' : '';
         return `<tr class="${rowClass}">
-          <td>${createNameCell(safe(r.Player))}</td>
+          <td>${createNameCell(player)}</td>
           <td>${formatShort(essence)}</td>
           <td>${formatShort(prev)}</td>
           <td class="${metricClass(change)}">${formatSignedShort(change)}</td>
-          <td class="${metricClass(pct)}">${isNaN(pct)?'—':formatPercent(pct)}</td>
-          <td>${safe(r.Flag)||'—'}</td>
-          <td>${safe(r.Below_Streak)||'0'}</td>
-          <td>${safe(r.Enforcement)||'—'}</td>
-          <td>${safe(r.Movement)||'—'}</td>
-          <td>${safe(r.Tier)||'—'}</td>
+          <td class="${metricClass(pct)}">${Number.isFinite(pct)?formatPercent(pct):'—'}</td>
+          <td>${flag||'—'}</td>
+          <td>${streak||'0'}</td>
+          <td>${enforcement||'—'}</td>
+          <td>${movement||'—'}</td>
+          <td>${tier||'—'}</td>
         </tr>`;
       }).join('');
 
       renderTopChart(eventRows);
-      renderList('flaggedList', eventRows.filter(r=>safe(r.Flag)==='FLAG').sort((a,b)=>parseNumber(b.Essence_Points)-parseNumber(a.Essence_Points)).map(r=>`${safe(r.Player)} — ${formatShort(parseNumber(r.Essence_Points))}`), 'FLAG');
-      renderList('summonList', eventRows.filter(r=>safe(r.Enforcement)==='SUMMON').sort((a,b)=>parseNumber(b.Below_Streak)-parseNumber(a.Below_Streak)).map(r=>`${safe(r.Player)} — streak ${safe(r.Below_Streak)}`), 'SUMMON');
-      renderList('movementList', eventRows.filter(r=>['New Joiner','Returned'].includes(safe(r.Movement))).map(r=>`${safe(r.Player)} — ${safe(r.Movement)}`), 'MOVE');
+      renderList('flaggedList', eventRows.filter(r=>safe(getValueByAliases(r,['Flag']))==='FLAG').sort((a,b)=>parseNumber(getValueByAliases(b,['Essence_Points','Essence','Points','Score']))-parseNumber(getValueByAliases(a,['Essence_Points','Essence','Points','Score']))).map(r=>`${safe(getValueByAliases(r,['Player','Name','Player Name']))} — ${formatShort(parseNumber(getValueByAliases(r,['Essence_Points','Essence','Points','Score'])))}`), 'FLAG');
+      renderList('summonList', eventRows.filter(r=>safe(getValueByAliases(r,['Enforcement','Action']))==='SUMMON').sort((a,b)=>parseNumber(getValueByAliases(b,['Below_Streak','Below Streak','Streak']))-parseNumber(getValueByAliases(a,['Below_Streak','Below Streak','Streak']))).map(r=>`${safe(getValueByAliases(r,['Player','Name','Player Name']))} — streak ${safe(getValueByAliases(r,['Below_Streak','Below Streak','Streak']))}`), 'SUMMON');
+      renderList('movementList', eventRows.filter(r=>['New Joiner','Returned'].includes(safe(getValueByAliases(r,['Movement','Status Movement'])))).map(r=>`${safe(getValueByAliases(r,['Player','Name','Player Name']))} — ${safe(getValueByAliases(r,['Movement','Status Movement']))}`), 'MOVE');
     }
 
     function populateEvents(){
       const eventSelect=document.getElementById('eventSelect');
-      const events=[...new Set(summaryRows.map(r=>safe(r.Event_Date)).filter(Boolean))].sort((a,b)=>new Date(a)-new Date(b));
+      const events=[...new Set(summaryRows.map(r=>safe(getValueByAliases(r,['Event_Date','Event Date','Date']))).filter(Boolean))].sort((a,b)=>new Date(a)-new Date(b));
       eventSelect.innerHTML=events.map(e=>`<option value="${e}">${e}</option>`).join('');
       selectedEvent=events[events.length-1] || null;
       if(selectedEvent) eventSelect.value=selectedEvent;
     }
 
     async function fetchCsv(url){
+      url = String(url||'').trim();
       const response=await fetch(url + (url.includes('?') ? '&' : '?') + '_ts=' + Date.now());
       if(!response.ok) throw new Error(`Failed to load ${url}`);
       return parseCSV(await response.text());
