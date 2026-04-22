@@ -486,6 +486,16 @@
       flex:0 0 36px;
     }
 
+    .player-link{
+      cursor:pointer;
+      color:#eef4ff;
+      font-weight:700;
+    }
+
+    .player-link:hover{
+      color:#9ec5ff;
+    }
+
     .metric-pos{color:#61e29d;font-weight:800}
     .metric-neg{color:#ff7f8f;font-weight:800}
     .metric-flat{color:#c6d3ea;font-weight:800}
@@ -626,6 +636,155 @@
       transform:translateY(0);
     }
 
+    .modal{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      background:rgba(3,8,18,.72);
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+      z-index:2000;
+      padding:16px;
+    }
+
+    .modal.show{
+      display:flex;
+    }
+
+    .modal-card{
+      width:min(1100px,100%);
+      max-height:90vh;
+      overflow:hidden;
+      border-radius:24px;
+      border:1px solid rgba(255,255,255,.12);
+      background:linear-gradient(180deg,rgba(14,27,50,.96),rgba(8,18,36,.96));
+      box-shadow:0 24px 60px rgba(0,0,0,.45);
+    }
+
+    .modal-head{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      padding:18px 20px 12px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+
+    .modal-title{
+      margin:0;
+      font-size:24px;
+      font-weight:900;
+      letter-spacing:-.03em;
+    }
+
+    .modal-subtitle{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    .modal-close{
+      min-width:42px;
+      height:42px;
+      border:none;
+      border-radius:12px;
+      cursor:pointer;
+      font-size:22px;
+      font-weight:900;
+      color:#fff;
+      background:linear-gradient(135deg,rgba(122,184,255,.22),rgba(79,124,255,.18));
+      border:1px solid rgba(122,184,255,.25);
+    }
+
+    .modal-body{
+      padding:16px 20px 20px;
+      overflow:auto;
+      max-height:calc(90vh - 90px);
+    }
+
+    .history-kpis{
+      display:grid;
+      grid-template-columns:repeat(4,minmax(0,1fr));
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .history-kpi{
+      border-radius:16px;
+      padding:14px;
+      background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .history-kpi-label{
+      color:var(--muted);
+      font-size:11px;
+      font-weight:800;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+    }
+
+    .history-kpi-value{
+      margin-top:10px;
+      font-size:24px;
+      font-weight:900;
+      color:#fff;
+      letter-spacing:-.03em;
+    }
+
+    .history-chart-wrap{
+      height:260px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.08);
+      background:rgba(255,255,255,.03);
+      padding:10px;
+      margin-bottom:14px;
+    }
+
+    .history-table-wrap{
+      overflow:auto;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;
+    }
+
+    .history-table{
+      width:100%;
+      min-width:980px;
+      border-collapse:collapse;
+    }
+
+    .history-table thead th{
+      position:sticky;
+      top:0;
+      z-index:1;
+      background:#101c35;
+      color:#dbe8ff;
+      font-size:11px;
+      text-transform:uppercase;
+      letter-spacing:.06em;
+      text-align:left;
+      padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,.12);
+      white-space:nowrap;
+    }
+
+    .history-table tbody td{
+      padding:12px 14px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      font-size:13px;
+      color:#f1f5ff;
+      white-space:nowrap;
+    }
+
+    .history-empty{
+      padding:24px;
+      color:var(--muted);
+      font-size:14px;
+    }
+
     @media(max-width:1400px){
       .status-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
       .clan-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -645,6 +804,7 @@
     @media(max-width:900px){
       .status-strip{grid-template-columns:1fr 1fr}
       .home-btn{width:100%}
+      .history-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
 
     @media(max-width:820px){
@@ -666,7 +826,7 @@
     }
 
     @media(max-width:560px){
-      .hero-side,.kpi-grid,.status-strip,.clan-grid,.top4-grid{grid-template-columns:1fr}
+      .hero-side,.kpi-grid,.status-strip,.clan-grid,.top4-grid,.history-kpis{grid-template-columns:1fr}
       .hero h1{font-size:28px}
       .back-to-top{
         right:12px;
@@ -942,6 +1102,67 @@
 
   </div>
 
+  <div id="playerHistoryModal" class="modal" aria-hidden="true">
+    <div class="modal-card">
+      <div class="modal-head">
+        <div>
+          <h3 id="historyPlayerName" class="modal-title">Player History</h3>
+          <p class="modal-subtitle">Previous Dark Omen results, event positions, and cumulative essence</p>
+        </div>
+        <button id="closePlayerHistoryModal" class="modal-close" type="button" aria-label="Close">×</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="history-kpis">
+          <div class="history-kpi">
+            <div class="history-kpi-label">Events Recorded</div>
+            <div id="historyEventCount" class="history-kpi-value">0</div>
+          </div>
+          <div class="history-kpi">
+            <div class="history-kpi-label">Cumulative Essence</div>
+            <div id="historyCumulativeEssence" class="history-kpi-value">0</div>
+          </div>
+          <div class="history-kpi">
+            <div class="history-kpi-label">Best Position</div>
+            <div id="historyBestPosition" class="history-kpi-value">—</div>
+          </div>
+          <div class="history-kpi">
+            <div class="history-kpi-label">Latest Essence</div>
+            <div id="historyLatestEssence" class="history-kpi-value">0</div>
+          </div>
+        </div>
+
+        <div class="history-chart-wrap">
+          <canvas id="playerHistoryChart"></canvas>
+        </div>
+
+        <div class="history-table-wrap">
+          <table class="history-table">
+            <thead>
+              <tr>
+                <th>Event Date</th>
+                <th>Position</th>
+                <th>Essence</th>
+                <th>Prev Essence</th>
+                <th>Change</th>
+                <th>Change %</th>
+                <th>Cumulative Essence</th>
+                <th>Status</th>
+                <th>Tier</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="playerHistoryTable"></tbody>
+          </table>
+        </div>
+
+        <div id="playerHistoryEmpty" class="history-empty" style="display:none;">
+          No history found for this player.
+        </div>
+      </div>
+    </div>
+  </div>
+
   <button id="backToTopBtn" class="back-to-top" aria-label="Back to top" title="Back to top">↑</button>
 
   <script>
@@ -961,6 +1182,7 @@
 
     let trendChart = null;
     let topChart = null;
+    let playerHistoryChart = null;
 
     function parseCSVLine(line){
       const result = [];
@@ -1065,13 +1287,12 @@
       if(el) el.textContent = value;
     }
 
-    function createNameCell(name){
-      return `
-        <div class="name-wrap">
-          <div class="avatar">${initials(name)}</div>
-          <div>${name}</div>
-        </div>
-      `;
+    function escapeJsString(str){
+      return String(str || "")
+        .replace(/\\/g, "\\\\")
+        .replace(/'/g, "\\'")
+        .replace(/\n/g, " ")
+        .replace(/\r/g, " ");
     }
 
     function normalizeClanName(name){
@@ -1380,6 +1601,155 @@
       });
     }
 
+    function getPlayerHistory(playerName){
+      const target = safe(playerName).toLowerCase();
+
+      return analysisRows
+        .filter(r => safe(getValueByAliases(r,["Player","Name","Player Name"])).toLowerCase() === target)
+        .sort((a,b) => new Date(getValueByAliases(a,["Event_Date","Event Date","Date"])) - new Date(getValueByAliases(b,["Event_Date","Event Date","Date"])))
+        .map(row => {
+          const eventDate = safe(getValueByAliases(row,["Event_Date","Event Date","Date"]));
+          const essence = parseNumber(getValueByAliases(row,["Essence_Points","Essence","Points","Score"]));
+          const prev = parseNumber(getValueByAliases(row,["Prev_Essence","Previous_Essence","Prev Essence","Previous Essence"]));
+          const hasPrevious = prev > 0;
+          const change = hasPrevious ? essence - prev : 0;
+          const pct = hasPrevious ? (((essence - prev) / prev) * 100) : null;
+          const status = getPerformanceStatus(getValueByAliases(row,["Flag"]), essence);
+          const action = getAction(getValueByAliases(row,["Enforcement","Action"]), getValueByAliases(row,["Below_Streak","Below Streak","Streak"]));
+          const tier = safe(getValueByAliases(row,["Tier","Category"])) || "Consistent";
+
+          const sameEventRows = analysisRows
+            .filter(r => safe(getValueByAliases(r,["Event_Date","Event Date","Date"])) === eventDate)
+            .sort((a,b) => parseNumber(getValueByAliases(b,["Essence_Points","Essence","Points","Score"])) - parseNumber(getValueByAliases(a,["Essence_Points","Essence","Points","Score"])));
+
+          const position = sameEventRows.findIndex(r =>
+            safe(getValueByAliases(r,["Player","Name","Player Name"])).toLowerCase() === target
+          ) + 1;
+
+          return {
+            eventDate,
+            essence,
+            prev,
+            hasPrevious,
+            change,
+            pct,
+            status,
+            action,
+            tier,
+            position: position > 0 ? position : null
+          };
+        });
+    }
+
+    function renderPlayerHistoryChart(history){
+      const ctx = document.getElementById("playerHistoryChart").getContext("2d");
+      if(playerHistoryChart) playerHistoryChart.destroy();
+
+      const gradient = ctx.createLinearGradient(0,0,0,260);
+      gradient.addColorStop(0,"rgba(122,184,255,.40)");
+      gradient.addColorStop(1,"rgba(122,184,255,.04)");
+
+      playerHistoryChart = new Chart(ctx,{
+        type:"line",
+        data:{
+          labels:history.map(h => h.eventDate),
+          datasets:[{
+            label:"Essence",
+            data:history.map(h => h.essence),
+            borderColor:"#9ec5ff",
+            backgroundColor:gradient,
+            fill:true,
+            tension:.35,
+            pointRadius:3,
+            pointHoverRadius:5,
+            pointBackgroundColor:"#dce9ff",
+            pointBorderWidth:0
+          }]
+        },
+        options:{
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{
+            legend:{display:false},
+            tooltip:{callbacks:{label:ctx => " " + formatShort(ctx.raw)}}
+          },
+          scales:{
+            x:{ticks:{color:"#b8c8e6"}},
+            y:{
+              ticks:{color:"#b8c8e6", callback:value => formatShort(value)},
+              grid:{color:"rgba(255,255,255,.08)"}
+            }
+          }
+        }
+      });
+    }
+
+    function openPlayerHistory(playerName){
+      const history = getPlayerHistory(playerName);
+      const modal = document.getElementById("playerHistoryModal");
+      const table = document.getElementById("playerHistoryTable");
+      const empty = document.getElementById("playerHistoryEmpty");
+
+      document.getElementById("historyPlayerName").textContent = playerName;
+
+      if(!history.length){
+        document.getElementById("historyEventCount").textContent = "0";
+        document.getElementById("historyCumulativeEssence").textContent = "0";
+        document.getElementById("historyBestPosition").textContent = "—";
+        document.getElementById("historyLatestEssence").textContent = "0";
+        table.innerHTML = "";
+        empty.style.display = "block";
+        if(playerHistoryChart){ playerHistoryChart.destroy(); playerHistoryChart = null; }
+        modal.classList.add("show");
+        modal.setAttribute("aria-hidden","false");
+        return;
+      }
+
+      empty.style.display = "none";
+
+      const bestPosition = Math.min(...history.map(h => h.position || 999999));
+      const latestEssence = history[history.length - 1].essence;
+      const cumulativeTotal = history.reduce((s,h) => s + h.essence, 0);
+
+      document.getElementById("historyEventCount").textContent = history.length.toLocaleString();
+      document.getElementById("historyCumulativeEssence").textContent = formatShort(cumulativeTotal);
+      document.getElementById("historyBestPosition").textContent = bestPosition === 999999 ? "—" : `#${bestPosition}`;
+      document.getElementById("historyLatestEssence").textContent = formatShort(latestEssence);
+
+      const historyNewestFirst = history.slice().reverse();
+
+      table.innerHTML = historyNewestFirst.map(h => {
+        const cumulativeToEvent = history
+          .filter(x => new Date(x.eventDate) <= new Date(h.eventDate))
+          .reduce((s,x) => s + x.essence, 0);
+
+        return `
+          <tr>
+            <td>${h.eventDate}</td>
+            <td>${h.position ? "#" + h.position : "—"}</td>
+            <td>${formatShort(h.essence)}</td>
+            <td>${h.hasPrevious ? formatShort(h.prev) : "—"}</td>
+            <td class="${metricClass(h.change, h.hasPrevious)}">${h.hasPrevious ? formatSignedShort(h.change) : "—"}</td>
+            <td class="${h.pct === null ? "metric-none" : metricClass(h.pct, true)}">${h.pct === null ? "—" : formatPercent(h.pct)}</td>
+            <td>${formatShort(cumulativeToEvent)}</td>
+            <td><span class="perf-badge ${getPerformanceStatusClass(h.status)}">${h.status}</span></td>
+            <td><span class="tier-badge ${getTierClass(h.tier)}">${h.tier}</span></td>
+            <td><span class="action-badge ${getActionClass(h.action)}">${h.action}</span></td>
+          </tr>
+        `;
+      }).join("");
+
+      renderPlayerHistoryChart(history);
+      modal.classList.add("show");
+      modal.setAttribute("aria-hidden","false");
+    }
+
+    function closePlayerHistory(){
+      const modal = document.getElementById("playerHistoryModal");
+      modal.classList.remove("show");
+      modal.setAttribute("aria-hidden","true");
+    }
+
     function renderEvent(){
       const eventRows = analysisRows.filter(r => safe(getValueByAliases(r,["Event_Date","Event Date","Date"])) === selectedEvent);
       const searchTerm = safe(document.getElementById("playerSearch").value).toLowerCase();
@@ -1466,7 +1836,12 @@
 
           return `
             <tr class="${tier === "Top Performer" ? "highlight-top" : ""}">
-              <td>${createNameCell(player)}</td>
+              <td>
+                <div class="name-wrap">
+                  <div class="avatar">${initials(player)}</div>
+                  <div class="player-link" onclick="openPlayerHistory('${escapeJsString(player)}')">${player}</div>
+                </div>
+              </td>
               <td>${formatShort(essence)}</td>
               <td>${hasPrevious ? formatShort(prev) : "—"}</td>
               <td class="${metricClass(change, hasPrevious)}">${hasPrevious ? formatSignedShort(change) : "—"}</td>
@@ -1542,6 +1917,16 @@
     document.getElementById("playerSearch").addEventListener("input", renderEvent);
     document.getElementById("prevEventBtn").addEventListener("click", goToPreviousEvent);
     document.getElementById("nextEventBtn").addEventListener("click", goToNextEvent);
+
+    document.getElementById("closePlayerHistoryModal").addEventListener("click", closePlayerHistory);
+
+    document.getElementById("playerHistoryModal").addEventListener("click", e => {
+      if(e.target.id === "playerHistoryModal") closePlayerHistory();
+    });
+
+    document.addEventListener("keydown", e => {
+      if(e.key === "Escape") closePlayerHistory();
+    });
 
     const btn = document.getElementById("backToTopBtn");
     window.addEventListener("scroll", () => {
